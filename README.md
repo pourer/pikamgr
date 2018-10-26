@@ -1,6 +1,6 @@
 
 # PikaMgr #
-PikaMgr is based on Codis3.2.2-Dashboard and Codis3.2.2-FE([https://github.com/CodisLabs/codis/tree/3.2.2](https://github.com/CodisLabs/codis/tree/3.2.2)).
+Pikamgr is a cluster management platform for the redis storage system-[Qihoo360/pika](https://github.com/Qihoo360/pika), based on [CodisLabs/codis3.2.2-dashboard and codis3.2.2-fe](https://github.com/CodisLabs/codis/tree/3.2.2).
 
 # Feature #
 
