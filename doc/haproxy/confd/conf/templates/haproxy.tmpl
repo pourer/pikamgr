@@ -1,0 +1,43 @@
+global                                       					#全局
+log 127.0.0.1  local0 info                   					#全局的日志配置 其中日志级别是[err warning info debug].local0 是日志设备
+maxconn 65535                                					#每个进程最大连接数
+chroot /usr/haproxy                    				#工作目录（安全
+#uid root                                    					#haproxy运行的用户和组 
+#gid root				
+daemon                                       					#后台程序模式工作  
+nbproc 1                                     					#后台进程数量
+pidfile /usr/haproxy/haproxy.pid   					#pid文件存储目录
+
+defaults
+log global
+mode http
+option httplog
+option dontlognull
+timeout connect 1s
+timeout client 60s
+timeout server 60s
+{{$HAPROXY_STATUS_PORT := getenv "HAPROXY_STATUS_PORT"}}			
+listen stats                                  											#定义HAProxy监控页面
+bind *:{{if ne $HAPROXY_STATUS_PORT ""}}{{$HAPROXY_STATUS_PORT}}{{else}}{{8000}}{{end}}	#监控页面端口
+mode http				
+stats enable                                  					#开启监控页面功能；
+stats refresh 30s                             					#HAProxy监控页面统计自动刷新时间。
+stats uri /status                     		  					#设置监控页面URL路径。 http：//IP:8000/status可查看
+stats hide-version                            					#隐藏HAProxy版本信息
+{{range $product_name := (ls "/cache-manager/gslb/haproxy")}}{{$value := (getv (printf "/cache-manager/gslb/haproxy/%s" $product_name))}}{{$data := json $value}}{{range $backend := $data.backends}}{{range $rw, $sg := $backend.serverGroup}}
+frontend FT{{$product_name}}-{{$backend.name}}{{$rw}}       	#定义前端虚拟节点名，用于区分不同负载实例
+mode tcp                                      					#设置模式为TCP
+option tcplog                                 					#设置日志模式
+bind *:{{$sg.port}} name {{$product_name}}-{{$backend.name}}       	#监听端口，即该业务访问端口
+timeout client 1s                             					#客户端连接超时时间
+default_backend BK{{$product_name}}-{{$backend.name}}{{$rw}}	#指定后端服务池(backend定义htmpool)
+				
+backend BK{{$product_name}}-{{$backend.name}}{{$rw}}        	#定义后端真实服务器,名称和前端配置一样
+mode tcp                                      					#设置模式为TCP
+option redis-check                            					#设置检测模式
+timeout connect 1s                            					#连接超时时间
+timeout server 1s                             					#客户端连接超时时间
+balance roundrobin                            					#负载均衡算法，roundrobin表示轮询{{range $index, $addr := $sg.servers}}
+server pika-{{$addr}} {{$addr}} weight 10 check inter 2s rise 2 fall 3  maxconn 600	#后端服务设置{{end}}
+default-server slowstart 3s
+{{end}}{{end}}{{end}}
