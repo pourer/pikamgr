@@ -1,0 +1,21 @@
+
+1、解压etcd、zetcd相关压缩文件
+	解压目录：/usr/etcd
+	
+	注：zetcd为etcd兼容zookeeper协议提供支持，如果相关服务或者组件无法避免使用zookeeper，则使用zetcd做兼容
+	
+2、配置
+	配置文件etcd-config.yml放置到/home/shunwang/etcd目录下
+	
+	根据实际etcd集群的部署情况，修改配置文件中以下配置项：
+		name
+		data-dir
+		initial-cluster
+		initial-advertise-peer-urls
+		advertise-client-urls
+		
+3、启动etcd
+	/usr/etcd/etcd --config-file /usr/etcd/etcd-config.yml
+
+4、启动zetcd
+	/usr/etcd/zetcd --zkaddr 0.0.0.0:2182 --endpoints 127.0.0.1:2379

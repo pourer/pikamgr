@@ -1,0 +1,48 @@
+
+1、若没有安装gcc，则安装gcc
+	查看gcc版本信息：gcc -v
+	yum -y install gcc
+
+	
+2、源码包
+	将haproxy-1.8.14.tar.gz放置到目标服务器的某个目录下
+	执行：tar -zxf haproxy-1.8.14.tar.gz
+
+	
+3、编译
+	1）查看Linux内核版本
+		uname -r
+	2）参考https://github.com/haproxy/haproxy 下对应的编译选项 TARGET 的值
+		如：
+			- linux22     for Linux 2.2
+			- linux24     for Linux 2.4 and above (default)
+			- linux24e    for Linux 2.4 with support for a working epoll (> 0.21)
+			- linux26     for Linux 2.6 and above
+			- linux2628   for Linux 2.6.28, 3.x, and above (enables splice and tproxy)
+			
+	3）执行编译（假设第二步通过Linux内核版本获得的 TARGET=linux2628）
+		cd haproxy-1.8.14
+		make TARGET=linux2628 PREFIX=/usr/haproxy
+		make install PREFIX=/usr/haproxy
+		cp ./examples/haproxy.init /etc/init.d/haproxy && chmod 755 /etc/init.d/haproxy
+		mkdir /usr/haproxy/conf
+		
+		设置haproxy的日志输出：
+			在 /etc/rsyslog.conf 文件末尾添加：local0.*  /var/log/haproxy.log
+			systemctl restart rsyslog
+
+			
+4、通过confd动态更新 /usr/haproxy/conf/haproxy.cfg
+	将haproxy-confd.zip解压至 /usr 目录下
+	执行：mv /usr/confd/confd-0.16.0-linux-amd64 /usr/confd/confd
+	
+	可以通过设置环境变量：HAPROXY_STATUS_PORT，来设置haproxy的状态检查端口
+	配置模板参见：/usr/confd/conf/templates 目录下的haproxy.tmpl
+	
+	
+5、启动（confd会启动haproxy）
+	/home/shunwang/confd/confd --config-file /home/shunwang/confd/confd.toml
+	
+	注：若使用supervisor，则参见supervisor相关的安装部署说明
+	注：如果执行 service haproxy start 失败，提示：/etc/sysconfig/network 不存在，则创建/etc/sysconfig/network空文件保存即可
+	

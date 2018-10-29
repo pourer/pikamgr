@@ -1,0 +1,27 @@
+# 使用的后端存储类型
+backend = "etcd"
+
+# 更新任务的相关配置所在目录（目录下包含：conf.d 和 tempaltes 两个目录）
+confdir = "/usr/confd/conf"
+
+# 日志输出等级
+log-level = "info"
+
+# 定时执行更新任务对目标配置进行对比更新
+# 开启watch，则interval不起作用
+# 单位：秒
+interval = 3
+
+# 开启对backend上的信息的监听功能
+# 开启watch，则interval不起作用
+#watch = true
+
+# 如果设置为true，则目标配置不进行变更
+noop = false
+
+# backend的节点信息列表
+nodes = [
+   "http://XXXXXX:2379",
+   "http://XXXXXX:2379",
+   "http://XXXXXX:2379",
+]

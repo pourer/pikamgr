@@ -1,0 +1,29 @@
+
+1、安装python工具集
+	yum -y install python-setuptools
+	
+2、安装supervisor
+	easy_install supervisor
+	
+3、创建相关文件夹
+	mkdir -p /etc/supervisor/conf.d/
+	
+4、添加系统服务
+	将supervisord文件放置在 /etc/init.d 目录下
+	
+5、将supervisord.conf放置在 /etc/supervisor 目录下
+
+6、将conf.d文件夹下面的文件 按需放置在 /etc/supervisor/conf.d/ 目录下
+
+7、开启supervisord服务
+	service supervisord start
+	
+8、supervisorctl操作
+	更新配置信息：
+		supervisorctl update
+		
+	开启、停止目标程序：
+		supervisorctl start all
+		supervisorctl start XXX
+		supervisorctl stop all
+		supervisorctl stop XXX

@@ -1,0 +1,31 @@
+# ================member=================================
+
+# 节点名称
+name: etcd-swad1
+
+# 数据存放位置
+data-dir: /usr/etcd/data/etcd-swad1
+
+# 监听其他 Etcd 实例的地址
+listen-peer-urls: http://0.0.0.0:2380
+
+# 监听客户端地址
+listen-client-urls: http://0.0.0.0:2379
+
+
+# ================cluster=================================
+
+# 初始化集群 token
+initial-cluster-token: etcd-swad-cluster
+
+# 通知其他 Etcd 实例地址
+initial-advertise-peer-urls: http://192.168.107.235:2380
+
+# 初始化集群内节点地址
+initial-cluster: etcd-swad1=http://192.168.107.235:2380,etcd-swad2=http://192.168.107.236:2380,etcd-swad3=http://192.168.107.237:2380
+
+# 初始化集群状态，new 表示新建
+initial-cluster-state: new
+
+# 通知客户端地址
+advertise-client-urls: http://192.168.107.235:2379

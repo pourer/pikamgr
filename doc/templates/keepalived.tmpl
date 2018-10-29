@@ -1,0 +1,107 @@
+! Configuration File for keepalived
+
+global_defs {
+   router_id LVS-{{getenv "HOSTNAME"}}{{getenv "HOST_IP"}}
+}
+{{$LVSID := getenv "LVSID"}}
+vrrp_instance VI_PIKA_1 {
+    state {{if eq $LVSID "1"}}MASTER{{else}}BACKUP{{end}}
+    interface enp10s0f0
+    virtual_router_id 60
+    priority {{if eq $LVSID "1"}}120{{else}}100{{end}}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass abc#123
+    }
+    virtual_ipaddress {
+       192.168.107.181/24
+    }
+}
+{{range $product_name := (ls "/cache-manager/gslb/lvs")}}{{$value := (getv (printf "/cache-manager/gslb/lvs/%s" $product_name))}}{{$data := json $value}}
+## monitor{{range $index, $addr := $data.monitors}}{{$ipport := split $addr ":"}}{{if eq $index 0}}
+virtual_server 192.168.107.181 {{index $ipport 1}} {
+    delay_loop 6
+    lb_algo wrr
+    lb_kind DR
+    protocol TCP{{end}}
+	
+    real_server {{index $ipport 0}} {{index $ipport 1}} {
+        weight 1
+
+        TCP_CHECK {
+            connect_timeout 3      ##设置响应超时时间
+            nb_get_retry 3         ##设置超时重试次数
+            delay_before_retry 3　 ##设置超时重试间隔时间
+        }
+    }{{end}}
+}
+{{range $backend := $data.backends}}{{range $rw, $sg := $backend.serverGroup}}
+## {{$product_name}}-{{$backend.name}}---[{{$rw}}]
+virtual_server 192.168.107.181 {{$sg.port}} {
+    delay_loop 6
+    lb_algo wrr
+    lb_kind DR
+    protocol TCP
+	{{range $addr := $sg.servers}}{{$ipport := split $addr ":"}}
+    real_server {{index $ipport 0}} {{index $ipport 1}} {
+        weight 1
+
+        TCP_CHECK {
+            connect_timeout 3      ##设置响应超时时间
+            nb_get_retry 3         ##设置超时重试次数
+            delay_before_retry 3　 ##设置超时重试间隔时间
+        }
+    }{{end}}
+}{{end}}{{end}}{{end}}
+
+vrrp_instance VI_PIKA_2 {
+    state {{if eq $LVSID "2"}}MASTER{{else}}BACKUP{{end}}
+    interface enp10s0f0
+    virtual_router_id 61
+    priority {{if eq $LVSID "2"}}120{{else}}100{{end}}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass abc#123
+    }
+    virtual_ipaddress {
+       192.168.107.182/24
+    }
+}
+{{range $product_name := (ls "/cache-manager/gslb/lvs")}}{{$value := (getv (printf "/cache-manager/gslb/lvs/%s" $product_name))}}{{$data := json $value}}
+## monitor{{range $index, $addr := $data.monitors}}{{$ipport := split $addr ":"}}{{if eq $index 0}}
+virtual_server 192.168.107.182 {{index $ipport 1}} {
+    delay_loop 6
+    lb_algo wrr
+    lb_kind DR
+    protocol TCP{{end}}
+	
+    real_server {{index $ipport 0}} {{index $ipport 1}} {
+        weight 1
+
+        TCP_CHECK {
+            connect_timeout 3      ##设置响应超时时间
+            nb_get_retry 3         ##设置超时重试次数
+            delay_before_retry 3　 ##设置超时重试间隔时间
+        }
+    }{{end}}
+}
+{{range $backend := $data.backends}}{{range $rw, $sg := $backend.serverGroup}}
+## {{$product_name}}-{{$backend.name}}---[{{$rw}}]
+virtual_server 192.168.107.182 {{$sg.port}} {
+    delay_loop 6
+    lb_algo wrr
+    lb_kind DR
+    protocol TCP
+	{{range $addr := $sg.servers}}{{$ipport := split $addr ":"}}
+    real_server {{index $ipport 0}} {{index $ipport 1}} {
+        weight 1
+
+        TCP_CHECK {
+            connect_timeout 3      ##设置响应超时时间
+            nb_get_retry 3         ##设置超时重试次数
+            delay_before_retry 3　 ##设置超时重试间隔时间
+        }
+    }{{end}}
+}{{end}}{{end}}{{end}}

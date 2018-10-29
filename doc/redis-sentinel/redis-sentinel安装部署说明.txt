@@ -1,0 +1,15 @@
+
+1、使用pikamgr程序包中的redis-sentinel进行部署
+	sentinel.conf 放置到 /usr/pikamgr/config 目录下
+
+2、启动redis-sentinel
+	/usr/pikamgr/bin/redis-sentinel /usr/pikamgr/config/sentinel.conf
+	
+3、若使用supervisor，则参见supervisor相关的安装部署说明
+	注：sentinel.conf中的daemonize配置修改为：no，即：前台运行，否则supervisor无法管理
+	
+4、若配置了notification-script
+	则把redis-sentinel-notify.sh放置在 /usr/pikamgr/sh 目录下
+	并根据需要完善redis-sentinel-notify中的以下配置：
+		MAIL_FROM=""
+		MAIL_TO=""

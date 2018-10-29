@@ -1,0 +1,22 @@
+[template]
+# 对应的模板文件名称，默认到conf目录下templates的目录下进行查找
+src = "keepalived.tmpl"
+
+# 目标配置的输出路径
+dest = "/etc/keepalived/keepalived.conf"
+
+# 目标配置所属用户
+owner = "root"
+# 目标配置文件的权限设置
+mode = "0644"
+
+# 需要监听的对应backend(etcd/zookeeper等)上的存储路径
+keys = [
+    "/cache-manager/gslb/lvs",
+]
+
+# 执行此命令，检查根据模板文件生成的目标配置文件是否可用
+check_cmd = ""
+
+# 执行此命令，使得目标配置文件及时生效
+reload_cmd = "service keepalived reload"
