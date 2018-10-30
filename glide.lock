@@ -1,0 +1,84 @@
+hash: c58a32bdaa8eaf9a9aaf492cafa3e9000d23479bf7f21b6f854d440e23ba8c97
+updated: 2018-10-30T16:40:22.9688277+08:00
+imports:
+- name: github.com/BurntSushi/toml
+  version: 3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005
+- name: github.com/codegangsta/inject
+  version: 33e0aa1cb7c019ccc3fbe049a8262a6403d30504
+- name: github.com/CodisLabs/codis
+  version: 9fde2809cca131e3da1a7e0920ea151029301fb4
+  subpackages:
+  - pkg/utils/errors
+  - pkg/utils/log
+  - pkg/utils/math2
+  - pkg/utils/sync2
+  - pkg/utils/sync2/atomic2
+  - pkg/utils/timesize
+  - pkg/utils/trace
+- name: github.com/coreos/etcd
+  version: cc198e22d3b8fd7ec98304c95e68ee375be54589
+  subpackages:
+  - client
+  - pkg/pathutil
+  - pkg/srv
+  - pkg/types
+  - version
+- name: github.com/coreos/go-semver
+  version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
+  subpackages:
+  - semver
+- name: github.com/eahydra/go-zookeeper
+  version: 6a61491f985b01365dc06e637e3bcd0bd2c25797
+  subpackages:
+  - zk
+- name: github.com/garyburd/redigo
+  version: 48545177e92ae3e7bcdbd50b42f7a139e6a268da
+  subpackages:
+  - internal
+  - redis
+- name: github.com/gin-contrib/gzip
+  version: 1c01330167a8f9852d15334a78ce08f3d7cc37ef
+- name: github.com/gin-contrib/sse
+  version: 22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae
+- name: github.com/gin-gonic/gin
+  version: b869fe1415e4b9eb52f247441830d502aece2d4d
+  subpackages:
+  - binding
+  - json
+  - render
+- name: github.com/go-martini/martini
+  version: fe605b5cd210047ae3bb73d2b69a5b912a9b423d
+- name: github.com/golang/protobuf
+  version: 1e59b77b52bf8e4b449a57e6f79f21226d571845
+  subpackages:
+  - jsonpb
+  - proto
+- name: github.com/json-iterator/go
+  version: 2433035e513208b0f7bd5b50d0aecd889b2c1ff8
+- name: github.com/martini-contrib/render
+  version: ec18f8345a1181146728238980606fb1d6f40e8c
+- name: github.com/mattn/go-isatty
+  version: 3fb116b820352b7f0c281308a4d6250c22d94e27
+- name: github.com/modern-go/concurrent
+  version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
+- name: github.com/modern-go/reflect2
+  version: 94122c33edd36123c84d5368cfb2b69df93a0ec8
+- name: github.com/oxtoacart/bpool
+  version: 4e1c5567d7c2dd59fa4c7c83d34c2f3528b025d6
+- name: github.com/ugorji/go
+  version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
+  subpackages:
+  - codec
+- name: golang.org/x/net
+  version: 242b6b35177ec3909636b6cf6a47e8c2c6324b5d
+  subpackages:
+  - context
+- name: golang.org/x/sys
+  version: ebfc5b4631820b793c9010c87fd8fef0f39eb082
+  subpackages:
+  - unix
+- name: gopkg.in/go-playground/validator.v8
+  version: 5f1438d3fca68893a817e4a66806cea46a9e4ebf
+- name: gopkg.in/yaml.v2
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+testImports: []
