@@ -24,8 +24,10 @@
 		cd haproxy-1.8.14
 		make TARGET=linux2628 PREFIX=/usr/haproxy
 		make install PREFIX=/usr/haproxy
-		cp ./examples/haproxy.init /etc/init.d/haproxy && chmod 755 /etc/init.d/haproxy
 		mkdir /usr/haproxy/conf
+		
+		把haproxy部署说明文档中的init.d文件夹下的haproxy文件放置到 /etc/init.d 目录下，并执行以下命令：
+			chmod 755 /etc/init.d/haproxy
 		
 		设置haproxy的日志输出：
 			在 /etc/rsyslog.conf 文件末尾添加：local0.*  /var/log/haproxy.log
