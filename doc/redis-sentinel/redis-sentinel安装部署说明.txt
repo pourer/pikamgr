@@ -1,14 +1,29 @@
 
 1、使用pikamgr程序包中的redis-sentinel进行部署
+	如果pikamgr编译包中的redis-sentinel在目标服务器上启动失败，则需要进行源码编译
+	
+2、源码编译
+	1）将 extern/redis-3.2.11 整个目录打包上传至目标服务器的某个目录下
+	
+	2）将目录解压出来，依次执行以下命令：
+		cd redis-3.2.11
+		@chmod 777 src/mkreleasehdr.sh
+		make MALLOC=libc -j4
+		
+	3）编译完成之后
+		在 redis-3.2.11/src 目录下找到 redis-benchmark、redis-cli、redis-sentinel
+		将 redis-benchmark、redis-cli、redis-sentinel 拷贝至pikamgr所在服务器的 /usr/pikamgr/bin 目录下
+
+3、配置文件
 	sentinel.conf 放置到 /usr/pikamgr/config 目录下
 
-2、启动redis-sentinel
+4、启动redis-sentinel
 	/usr/pikamgr/bin/redis-sentinel /usr/pikamgr/config/sentinel.conf
 	
-3、若使用supervisor，则参见supervisor相关的安装部署说明
+5、若使用supervisor，则参见supervisor相关的安装部署说明
 	注：sentinel.conf中的daemonize配置修改为：no，即：前台运行，否则supervisor无法管理
 	
-4、若配置了notification-script
+6、若配置了notification-script
 	则把redis-sentinel-notify.sh放置在 /usr/pikamgr/sh 目录下
 	并根据需要完善redis-sentinel-notify中的以下配置：
 		MAIL_FROM=""

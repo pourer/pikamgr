@@ -77,9 +77,12 @@ pika-fe: deps
 	@rm -rf bin/assets; cp -rf cmd/fe/assets bin/
 
 redis-server:
-	@cp -f extern/redis-3.2.11/redis-benchmark bin/
-	@cp -f extern/redis-3.2.11/redis-cli bin/
-	@cp -f extern/redis-3.2.11/redis-sentinel bin/
+	@rm -f bin/redis*
+	@chmod 777 extern/redis-3.2.11/src/mkreleasehdr.sh
+	make MALLOC=libc -j4 -C extern/redis-3.2.11/
+	@cp -f extern/redis-3.2.11/src/redis-benchmark bin/
+	@cp -f extern/redis-3.2.11/src/redis-cli bin/
+	@cp -f extern/redis-3.2.11/src/redis-sentinel bin/
 
 test:
 	@echo "$$TEST_COVER" | bash
