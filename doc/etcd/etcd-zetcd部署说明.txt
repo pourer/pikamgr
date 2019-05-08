@@ -18,4 +18,4 @@
 	/usr/etcd/etcd --config-file /usr/etcd/etcd-config.yml
 
 4、启动zetcd
-	/usr/etcd/zetcd --zkaddr 0.0.0.0:2182 --endpoints 127.0.0.1:2379
+	/usr/etcd/zetcd --zkaddr 0.0.0.0:2181 --endpoints 127.0.0.1:2379

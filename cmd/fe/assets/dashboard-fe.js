@@ -252,6 +252,21 @@ function alertAction2(text, callback) {
     });
 }
 
+function alertAction3(text) {
+    BootstrapDialog.show({
+        title: "Warning !!",
+        type: "type-danger",
+        message: text,
+        closable: true,
+        buttons: [{
+            label: "CANCEL",
+            action: function(dialogItself){
+                dialogItself.close();
+            }
+        }],
+    });
+}
+
 function alertErrorResp(failedResp) {
     var text = "error response";
     if (failedResp.status != 1500 && failedResp.status != 800) {
@@ -296,6 +311,7 @@ function processGroupStats(codis_stats) {
             x.memory = "NA";
             x.maxmem = "NA";
 			x.dbsize = "NA"
+			x.qps = "NA";
             x.master = "NA";
             if (j == 0) {
                 x.master_expect = "NO:ONE";
@@ -330,6 +346,9 @@ function processGroupStats(codis_stats) {
                     var v = parseInt(s.stats["db_size"], 10);
                     x.dbsize = humanSize(v);
                 }
+				if (s.stats["instantaneous_ops_per_sec"]) {
+                    x.qps = parseInt(s.stats["instantaneous_ops_per_sec"], 10);
+                }
                 if (s.stats["master_addr"]) {
                     x.master = s.stats["master_addr"] + ":" + s.stats["master_link_status"];
                 } else {
@@ -344,10 +363,12 @@ function processGroupStats(codis_stats) {
             if (g.ispromoting) {
                 x.canremove = false;
                 x.canpromote = false;
+				x.canForceFullSync = false;
                 x.ispromoting = (j == g.ispromoting_index);
             } else {
                 x.canremove = (j != 0 || g.servers.length <= 1);
                 x.canpromote = j != 0;
+				x.canForceFullSync = j != 0;
                 x.ispromoting = false;
             }
             x.server_text = x.server;
@@ -860,6 +881,41 @@ dashboard.controller('MainCodisCtrl', ['$scope', '$http', '$uibModal', '$timeout
             }
         }
 
+		$scope.createForceFullSyncAction = function (group, server_addr) {
+            var codis_name = $scope.codis_name;
+            if (isValidInput(codis_name) && isValidInput(server_addr)) {
+				var o = {};
+                o.name = group.name;
+                o.servers = [];
+                var ha_master = -1;
+                for (var j = 0; j < group.servers.length; j++) {
+                    o.servers.push(group.servers[j].server);
+                    if (j == 0) {
+                        ha_master = j;
+                    }
+                }
+				
+				if (ha_master < 0) {
+					alertAction3("Find not master server in Group-[" + group.name + "]: " + toJsonHtml(o))
+				}else if (group.servers[ha_master].server == server_addr) {
+					alertAction3("Master server: " + server_addr + " not allowed this operation in Group-[" + group.name + "]: " + toJsonHtml(o))
+				}else {
+					var prompts = "ForceFullSync server: " + server_addr + " from master: " + group.servers[ha_master].server + " in Group-[" + group.name + "]: " + toJsonHtml(o);
+                    prompts += "\n\n";
+					prompts += "Do you really want to ForceFullSync server: " + server_addr + " from master: " + group.servers[ha_master].server;
+					alertAction2(prompts, function () {
+                        var xauth = genXAuth(codis_name);
+						var url = concatUrl("/api/topom/group/force-full-sync/" + xauth + "/" + group.name + "/" + server_addr, codis_name);
+						$http.put(url).then(function () {
+							$scope.refreshStats();
+						}, function (failedResp) {
+							alertErrorResp(failedResp);
+						});
+                    });
+				}
+            }
+        }
+		
         if (window.location.hash) {
             $scope.selectCodisInstance(window.location.hash.substring(1));
         }

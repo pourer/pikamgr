@@ -25,6 +25,19 @@ func (s *RedisStats) MasterAddr() string {
 	return ""
 }
 
+const (
+	MasterLinkStatusUp   = "up"
+	MasterLinkStatusDown = "down"
+)
+
+func (s *RedisStats) MasterLinkStatus() string {
+	addr, ok := s.Stats["master_link_status"]
+	if ok {
+		return addr
+	}
+	return ""
+}
+
 type GSLBStats struct {
 	Error    error
 	UnixTime int64

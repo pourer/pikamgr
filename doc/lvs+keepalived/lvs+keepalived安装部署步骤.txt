@@ -1,20 +1,5 @@
 1、系统参数调整
    1) vim /etc/sysctl.conf
-	  net.ipv4.tcp_mem = 3097431 4129911 6194862
-	  net.ipv4.tcp_rmem = 4096 87380 6291456
-	  net.ipv4.tcp_wmem = 4096 65536 4194304
-	  net.ipv4.tcp_max_tw_buckets = 262144
-	  net.ipv4.tcp_tw_recycle = 0
-	  net.ipv4.tcp_tw_reuse  = 1
-	  net.ipv4.tcp_syncookies  = 1
-	  net.ipv4.tcp_fin_timeout = 15
-	  net.ipv4.ip_local_port_range = 1024 65535
-	  net.ipv4.tcp_max_syn_backlog = 65535
-	  net.core.somaxconn  = 65535
-	  net.core.netdev_max_backlog  = 200000
-      
-	  fs.file-max=65535
-	  
 	  net.ipv4.ip_forward = 1
 	  net.ipv4.conf.all.send_redirects = 0
 	  net.ipv4.conf.default.send_redirects = 0
@@ -23,10 +8,13 @@
 		sysctl -p
    
    3）禁用SELINUX
+		查看SELINUX状态：
+			/usr/sbin/sestatus -v
+			
 		本次开机临时禁用：
 	       setenforce 0
 	   
-		永久禁用（机器重启后生效）（查看SELINUX状态：/usr/sbin/sestatus -v）：
+		永久禁用（机器重启后生效）：
 	       修改/etc/selinux/config 文件，将 SELINUX=enforcing 改为 SELINUX=disabled
 
 		   
@@ -38,9 +26,19 @@
 	 
    2）安装lvs+keepalived
       yum install -y ipvsadm keepalived
+
 	  
+3、设置环境变量
+	在当前环境中，两台服务器用来部署LVS即可（如需部署更多台的LVS，需根据实际部署情况来修改confd中的keepalived.tmpl，以均衡各VIP在各服务器上的角色和优先级）
 	
-3、通过confd动态更新 /etc/keepalived/keepalived.conf
+	其中一台设置环境变量执：
+		在 /etc/profile 末尾添加：export LVSID=1
+		
+	另一台设置环境变量：
+		在 /etc/profile 末尾添加：export LVSID=2
+
+		
+4、通过confd动态更新 /etc/keepalived/keepalived.conf
 	将lvs-confd.zip解压至 /usr 目录下
 	执行：mv /usr/confd/confd-0.16.0-linux-amd64 /usr/confd/confd
 	
@@ -48,12 +46,21 @@
 	配置模板参见：/usr/confd/conf/templates 目录下的keepalived.tmpl
 	
    
-4、在后端代理的真实服务器上执行脚本
+5、在后端代理的真实服务器上执行脚本
 	根据所分配的虚拟IP来修改realserver.sh中的VIPS信息
-	执行realserver.sh
+	
+	1）添加权限
+		chmod 777 realserver.sh
+		
+	2）绑定VIP到lo网卡，执行
+		realserver.sh start
+		
+	
+	注：如需解绑VIP到lo网卡，则执行
+		realserver.sh stop
 	
 
-5、启动（confd会启动keepalived）
+6、启动（confd会启动keepalived）
 	/usr/confd/confd --config-file /usr/confd/confd.toml
 	
 	注：若使用supervisor，则参见supervisor相关的安装部署说明

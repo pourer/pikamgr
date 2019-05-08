@@ -19,4 +19,4 @@ keys = [
 check_cmd = "/usr/haproxy/sbin/haproxy -c -f {{.src}}"
 
 # 执行此命令，使得目标配置文件及时生效
-reload_cmd = "service haproxy restart"
+reload_cmd = "service haproxy reload"

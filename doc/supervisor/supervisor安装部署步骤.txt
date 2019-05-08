@@ -15,10 +15,12 @@
 
 6、将conf.d文件夹下面的文件 按需放置在 /etc/supervisor/conf.d/ 目录下
 
-7、开启supervisord服务
+7、对应目标启动程序需要"前台运行"，请确认！
+
+8、开启supervisord服务
 	service supervisord start
 	
-8、supervisorctl操作
+9、supervisorctl操作
 	更新配置信息：
 		supervisorctl update
 		

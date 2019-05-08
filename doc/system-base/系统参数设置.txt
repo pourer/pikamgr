@@ -1,0 +1,23 @@
+1、网络参数
+	1) vim /etc/sysctl.conf
+		net.ipv4.tcp_mem = 3097431 4129911 6194862
+		net.ipv4.tcp_rmem = 4096 87380 6291456
+		net.ipv4.tcp_wmem = 4096 65536 4194304
+		net.ipv4.tcp_max_tw_buckets = 262144
+		net.ipv4.tcp_tw_recycle = 0
+		net.ipv4.tcp_tw_reuse  = 1
+		net.ipv4.tcp_syncookies  = 1
+		net.ipv4.tcp_fin_timeout = 15
+		net.ipv4.ip_local_port_range = 1024 65535
+		net.ipv4.tcp_max_syn_backlog = 65535
+		net.core.somaxconn  = 65535
+		net.core.netdev_max_backlog  = 200000
+   
+   2）生效sysctl配置
+		sysctl -p
+	  
+	  
+2、文件句柄数
+	1）vim /etc/security/limits.conf
+		* soft nofile 65536
+		* hard nofile 65536

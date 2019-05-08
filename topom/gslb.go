@@ -36,10 +36,10 @@ func (s *service) AddGSLB(gslbName, addr string) error {
 		}
 	}
 
-	_, err = gslb.NewClient(addr, time.Second).Info()
-	if err != nil {
-		return err
-	}
+	//_, err = gslb.NewClient(addr, time.Second).Info()
+	//if err != nil {
+	//	return err
+	//}
 
 	g.Servers = append(g.Servers, addr)
 	if err := s.gslbMapper.Update(g); err != nil {
@@ -107,7 +107,7 @@ func (s *service) refreshGSLBBackendInfo() error {
 	for name, v := range gslbs {
 		backends, monitors, err := s.getGSLBBackends(name)
 		if err != nil {
-			log.Errorln("service::refreshGSLBBackendInfo getGSLBBackends fail. gslbname-[%s] err-[%s]", name, err)
+			log.Errorf("service::refreshGSLBBackendInfo getGSLBBackends fail. gslbname-[%s] err-[%s]", name, err)
 			return err
 		}
 		g := &dao.GSLB{
@@ -163,10 +163,16 @@ func (s *service) haproxyBackends(backendName string) (dao.GSLBBackendGroups, da
 			if !ok || rs == nil || rs.Error != nil || rs.Timeout {
 				continue
 			}
-			if i != 0 && rs.MasterAddr() != v.Servers[0].Addr {
-				// 如果当前Pika-Group内Master不为v.Servers[0].Addr，则认为主从关系出错
-				bValid = false
-				break
+			if i != 0 {
+				if rs.MasterAddr() != v.Servers[0].Addr {
+					// 如果当前Pika-Group内Master不为v.Servers[0].Addr，则认为主从关系出错
+					bValid = false
+					break
+				}
+				if rs.MasterLinkStatus() != MasterLinkStatusUp {
+					// 如果当前Pika-Group内Slave与Master之间的状态不为：up，则此slave不对外提供服务
+					continue
+				}
 			}
 
 			doFunc := func(state dao.ServeState, port int) {

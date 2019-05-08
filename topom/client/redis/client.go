@@ -199,6 +199,7 @@ func (c *Client) InfoFull() (string, map[string]string, error) {
 	if err != nil {
 		return "", nil, errors.Trace(err)
 	}
+
 	p, err := redigo.Values(r, nil)
 	if err != nil || len(p) != 2 {
 		return "", nil, errors.Errorf("invalid response = %v", r)
@@ -209,7 +210,6 @@ func (c *Client) InfoFull() (string, map[string]string, error) {
 	}
 	info["maxmemory"] = strconv.Itoa(v)
 	text = fmt.Sprintf("%s\n#Config Get\nmaxmemory:%d", text, v)
-
 	return text, info, nil
 }
 
@@ -225,11 +225,12 @@ func (c *Client) SetMaster(master string) error {
 	}{
 		{Cmd: "CONFIG", Args: []interface{}{"SET", "masterauth", c.Auth}},
 		{Cmd: "SLAVEOF", Args: []interface{}{host, port}},
+		{Cmd: "CONFIG", Args: []interface{}{"REWRITE"}},
 	}
 
 	for _, opt := range opts {
 		if _, err := c.conn.Do(opt.Cmd, opt.Args...); err != nil {
-			return errors.Trace(err)
+			return errors.Trace(fmt.Errorf("cmd:%s err:%s", opt.Cmd, err.Error()))
 		}
 	}
 
@@ -249,6 +250,30 @@ func (c *Client) SetMaster(master string) error {
 	       }
 	   }
 	*/
+	return nil
+}
+
+func (c *Client) ForceFullSyncFromMaster(master string) error {
+	host, port, err := net.SplitHostPort(master)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	opts := []struct {
+		Cmd  string
+		Args []interface{}
+	}{
+		{Cmd: "CONFIG", Args: []interface{}{"SET", "masterauth", c.Auth}},
+		{Cmd: "SLAVEOF", Args: []interface{}{"NO", "ONE"}},
+		{Cmd: "SLAVEOF", Args: []interface{}{host, port, "force"}},
+		{Cmd: "CONFIG", Args: []interface{}{"REWRITE"}},
+	}
+
+	for _, opt := range opts {
+		if _, err := c.conn.Do(opt.Cmd, opt.Args...); err != nil {
+			return errors.Trace(fmt.Errorf("cmd:%s err:%s", opt.Cmd, err.Error()))
+		}
+	}
 	return nil
 }
 

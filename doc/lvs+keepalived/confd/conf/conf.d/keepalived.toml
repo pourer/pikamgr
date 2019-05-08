@@ -19,4 +19,4 @@ keys = [
 check_cmd = ""
 
 # 执行此命令，使得目标配置文件及时生效
-reload_cmd = "service keepalived reload"
+reload_cmd = "service keepalived start && service keepalived reload"

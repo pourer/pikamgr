@@ -1,0 +1,51 @@
+
+1、安装NTP服务
+	yum install ntp ntpdate -y 
+
+
+2、选择时间服务器
+	一般使用 /etc/ntp.conf 中默认的时间服务器即可
+	
+	如果默认的时间服务器存在问题，则访问：http://www.pool.ntp.org/zone/asia 
+	复制自动推荐的最合适的时间服务器列表，替换掉 /etc/ntp.conf 中的时间服务器列表
+	
+	注：/etc/ntp.conf 中时间服务器列表配置项，见：
+		server 0.centos.pool.ntp.org iburst
+		server 1.centos.pool.ntp.org iburst
+		server 2.centos.pool.ntp.org iburst
+		server 3.centos.pool.ntp.org iburst
+	
+
+3、CVE-2013-5211漏洞是否关闭
+	执行：
+		ntpdc
+	如下输出说明monlist已被禁止：
+		ntpdc> monlist
+		***Server reports data not found
+		ntpdc> 
+	
+	否则，执行：
+		echo "disable monitor" >> /etc/ntp.conf
+
+		
+4、启动并设置ntp服务为开机启动服务
+	cd /usr/lib/systemd/system
+	systemctl start ntpd
+	systemctl enable ntpd.service #设置开机启动服务 
+	
+
+5、同步远程时间服务
+	ntpdate -q 0.centos.pool.ntp.org 1.centos.pool.ntp.org
+	
+
+6、验证服务
+	ntpq -p
+	date -R
+	
+
+7、建立定时job
+	crontab -e
+	
+	把下面的信息拷贝到crontab -e打开的文件中：
+		00 01 * * * root /usr/sbin/ntpdate -q 0.centos.pool.ntp.org 1.centos.pool.ntp.org
+	

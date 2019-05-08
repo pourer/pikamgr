@@ -18,6 +18,9 @@ func (s *service) CreateGroup(groupName string, rPort, wPort int) error {
 	if groupName == "" || utf8.RuneCountInString(groupName) > dao.MAXGroupNameBytesLength {
 		return fmt.Errorf("invalid group name = %s, out of range", groupName)
 	}
+	if rPort == wPort {
+		return errors.New("Proxy-Read-Port and Proxy-Write-Port must be not equal")
+	}
 
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -302,6 +305,34 @@ func (s *service) GroupPromoteServer(groupName, addr string) error {
 	}
 }
 
+func (s *service) GroupForceFullSyncServer(groupName, addr string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	groups, err := s.groupMapper.Info()
+	if err != nil {
+		return err
+	}
+
+	g, ok := groups[groupName]
+	if !ok {
+		return fmt.Errorf("group-[%s] not found", groupName)
+	}
+
+	var index = g.GetServerIndex(addr)
+	if index == -1 {
+		return fmt.Errorf("group-[%s] doesn't have server-[%s]", groupName, addr)
+	} else if index == 0 {
+		return fmt.Errorf("group-[%s] master server-[%s] not allowed this operation", groupName, addr)
+	}
+
+	if g.Promoting.State != dao.ActionNothing {
+		return fmt.Errorf("group-[%s] is promoting", g.Name)
+	}
+
+	return s.doForceFullSyncAction(g.Servers[index].Addr, g.Servers[0].Addr)
+}
+
 func (s *service) resyncGroup(g *dao.Group) error {
 	if len(g.Servers) == 0 {
 		return nil
@@ -315,7 +346,7 @@ func (s *service) resyncGroup(g *dao.Group) error {
 		}
 
 		if err := s.doSyncAction(server.Addr, master); err != nil {
-			multiErr.Append(fmt.Errorf("service::resyncGroup doSyncAction failed. groupName:%s addr:%s master:%s", g.Name, server.Addr, master))
+			multiErr.Append(fmt.Errorf("service::resyncGroup doSyncAction failed. groupName:%s addr:%s master:%s error:%s", g.Name, server.Addr, master, err.Error()))
 		}
 	}
 
@@ -329,7 +360,7 @@ func (s *service) resyncGroup(g *dao.Group) error {
 }
 
 func (s *service) doSyncAction(addr, master string) error {
-	c, err := redis.NewClient(addr, s.config.ProductAuth, time.Second)
+	c, err := redis.NewClient(addr, s.config.ProductAuth, 10*time.Second)
 	if err != nil {
 		return err
 	}
@@ -341,8 +372,21 @@ func (s *service) doSyncAction(addr, master string) error {
 	return nil
 }
 
+func (s *service) doForceFullSyncAction(addr, master string) error {
+	c, err := redis.NewClient(addr, s.config.ProductAuth, 10*time.Second)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	if err := c.ForceFullSyncFromMaster(master); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *service) ServerInfo(addr string) ([]byte, error) {
-	c, err := redis.NewClient(addr, s.config.ProductAuth, time.Second)
+	c, err := redis.NewClient(addr, s.config.ProductAuth, 3*time.Second)
 	if err != nil {
 		return nil, err
 	}

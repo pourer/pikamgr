@@ -16,6 +16,7 @@ type GroupService interface {
 	AddGroupServer(groupName, addr string) error
 	DelGroupServer(groupName, addr string) error
 	GroupPromoteServer(groupName, addr string) error
+	GroupForceFullSyncServer(groupName, addr string) error
 	ServerInfo(addr string) ([]byte, error)
 }
 
@@ -34,6 +35,7 @@ func InitGroupHandler(s GroupService, router gin.IRouter) {
 	r.PUT("/add/:xauth/:gname/:addr", h.AddServer)
 	r.PUT("/del/:xauth/:gname/:addr", h.DelServer)
 	r.PUT("/promote/:xauth/:gname/:addr", h.PromoteServer)
+	r.PUT("/force-full-sync/:xauth/:gname/:addr", h.ForceFullSyncServer)
 	r.GET("/info/:addr", h.ServerInfo)
 }
 
@@ -158,6 +160,27 @@ func (h *groupHandler) PromoteServer(ctx *gin.Context) {
 	}
 
 	if err := h.s.GroupPromoteServer(groupName, addr); err != nil {
+		ctx.IndentedJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, nil)
+}
+
+func (h *groupHandler) ForceFullSyncServer(ctx *gin.Context) {
+	groupName := ctx.Param("gname")
+	if groupName == "" {
+		ctx.IndentedJSON(http.StatusBadRequest, "group name invalid")
+		return
+	}
+
+	addr := ctx.Param("addr")
+	if len(addr) == 0 {
+		ctx.IndentedJSON(http.StatusBadRequest, "missing addr")
+		return
+	}
+
+	if err := h.s.GroupForceFullSyncServer(groupName, addr); err != nil {
 		ctx.IndentedJSON(http.StatusInternalServerError, err.Error())
 		return
 	}

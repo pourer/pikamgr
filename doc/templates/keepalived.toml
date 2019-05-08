@@ -12,11 +12,11 @@ mode = "0644"
 
 # 需要监听的对应backend(etcd/zookeeper等)上的存储路径
 keys = [
-    "/cache-manager/gslb/lvs",
+    "/cache-manager",
 ]
 
 # 执行此命令，检查根据模板文件生成的目标配置文件是否可用
 check_cmd = ""
 
 # 执行此命令，使得目标配置文件及时生效
-reload_cmd = "service keepalived reload"
+reload_cmd = "service keepalived start && service keepalived reload"

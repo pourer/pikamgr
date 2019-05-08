@@ -90,7 +90,7 @@
 						Group Name:
                         <input style="height: 28px; width: 250px;" type="text" maxlength="32"
                                pattern="^[A-Za-z0-9]+$"
-                               class="form-control" placeholder="Group Name(length < 32)"
+                               class="form-control" placeholder="Group Name(alnum,length < 32)"
                                ng-model="new_group_name">
 						Proxy Read-Port:
 						<input style="height: 28px; width: 140px;"
@@ -160,8 +160,10 @@
                                 </span>
                             </span>
                         </th>
+						<th style="width: 35px;"/>
                         <th style="min-width: 140px;">Memory</th>
 						<th style="min-width: 140px;">DBSize</th>
+						<th style="min-width: 80px;">QPS</th>
                         <th style="min-width: 230px;">Keys</th>
                         <th style="width: 35px; text-align: center">
                             <span ng-if="group.canremove">
@@ -183,7 +185,7 @@
                                         <span ng-switch-when="ha_real_master">
                                             <button class="btn btn-success btn-xs active"
                                                     style="width: 70px;"
-                                                    data-toggle="tooltip" data-placement="right" title="PROMOTE SERVER [[server.server]]"
+                                                    data-toggle="tooltip" data-placement="right" title="PROMOTE SERVER [[server.server]] of GROUP-[[group.name]]"
                                                     ng-click="promoteServer(group, server.server)">
                                                 PROMOTE
                                             </button>
@@ -191,7 +193,7 @@
                                         <span ng-switch-default>
                                             <button class="btn btn-warning btn-xs active"
                                                     style="width: 70px;"
-                                                    data-toggle="tooltip" data-placement="right" title="PROMOTE SERVER [[server.server]]"
+                                                    data-toggle="tooltip" data-placement="right" title="PROMOTE SERVER [[server.server]] of GROUP-[[group.name]]"
                                                     ng-click="promoteServer(group, server.server)">
                                                 PROMOTE
                                             </button>
@@ -202,7 +204,7 @@
                                     <span ng-switch-when="true">
                                         <button class="btn btn-danger btn-xs active"
                                                 style="width: 70px;"
-                                                data-toggle="tooltip" data-placement="right" title="RESYNC SLOTS of GROUP-[[group.id]]"
+                                                data-toggle="tooltip" data-placement="right" title="Execute SLAVEOF [[server.master_expect]] On Each Slave of GROUP-[[group.name]]"
                                                 ng-click="resyncGroup(group)">
                                             SYNC
                                         </button>
@@ -210,7 +212,7 @@
                                     <span ng-switch-default>
                                         <button class="btn btn-primary btn-xs active"
                                                 style="width: 70px;"
-                                                data-toggle="tooltip" data-placement="right" title="RESYNC SLOTS of GROUP-[[group.id]]"
+                                                data-toggle="tooltip" data-placement="right" title="Execute SLAVEOF [[server.master_expect]] On Each Slave of GROUP-[[group.name]]"
                                                 ng-click="resyncGroup(group)">
                                             SYNC
                                         </button>
@@ -221,7 +223,7 @@
                                 <span ng-if="server.ispromoting">
                                     <button class="btn btn-danger btn-xs active"
                                             style="width: 70px;"
-                                            data-toggle="tooltip" data-placement="right" title="PROMOTE SERVER [[server.server]]"
+                                            data-toggle="tooltip" data-placement="right" title="PROMOTE SERVER [[server.server]] of GROUP-[[group.name]]"
                                             ng-click="promoteServer(group, server.server)">
                                         PROMOTE
                                     </button>
@@ -260,8 +262,28 @@
                             <span ng-switch-when="false" class="status_label_error">[[server.master]]</span>
                             <span ng-switch-default>[[server.master]]</span>
                         </td>
+						
+						<td class="button_tight_column" >
+							<span ng-if="!group.ispromoting">
+								<span ng-if="!server.canForceFullSync">
+									<button class="btn btn-success btn-xs disabled"
+											data-toggle="tooltip" data-placement="right" title="SLAVEOF [[server.master_expect]] FORCE of GROUP-[[group.name]]">
+										<span class="glyphicon glyphicon-wrench"></span>
+									</button>
+								</span>
+								<span ng-if="server.canForceFullSync">
+									<button class="btn btn-success btn-xs active"
+											data-toggle="tooltip" data-placement="right" title="SLAVEOF [[server.master_expect]] FORCE of GROUP-[[group.name]]"
+											ng-click="createForceFullSyncAction(group, server.server)">
+										<span class="glyphicon glyphicon-wrench"></span>
+									</button>
+								</span>
+							</span>
+                        </td>
+						
                         <td>[[server.memory]]</td>
 						<td>[[server.dbsize]]</td>
+						<td>[[server.qps]]</td>
                         <td ng-switch="server.status">
                             <span ng-switch-when="ERROR" class="status_label_error">[[server.status]]</span>
                             <span ng-switch-when="TIMEOUT" class="status_label_warning">[[server.status]]</span>

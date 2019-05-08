@@ -3,7 +3,7 @@
 src = "haproxy.tmpl"
 
 # 目标配置的输出路径
-dest = "/home/shunwang/haproxy/conf/haproxy.cfg"
+dest = "/usr/haproxy/conf/haproxy.cfg"
 
 # 目标配置所属用户
 owner = "root"
@@ -12,11 +12,11 @@ mode = "0644"
 
 # 需要监听的对应backend上的存储路径
 keys = [
-    "/cache-manager/gslb/haproxy",
+    "/cache-manager",
 ]
 
 # 执行此命令，检查根据模板文件生成的目标配置文件是否可用
-check_cmd = "/home/shunwang/haproxy/sbin/haproxy -c -f {{.src}}"
+check_cmd = "/usr/haproxy/sbin/haproxy -c -f {{.src}}"
 
 # 执行此命令，使得目标配置文件及时生效
-reload_cmd = "service haproxy restart"
+reload_cmd = "service haproxy reload"

@@ -3,11 +3,12 @@
 	如果pikamgr编译包中的redis-sentinel在目标服务器上启动失败，则需要进行源码编译
 	
 2、源码编译
-	1）将 extern/redis-3.2.11 整个目录打包上传至目标服务器的某个目录下
+	1）将redis-3.2.11.zip上传至目标服务器的某个目录下
 	
-	2）将目录解压出来，依次执行以下命令：
+	2）依次执行以下命令：
+		unzip redis-3.2.11.zip
 		cd redis-3.2.11
-		@chmod 777 src/mkreleasehdr.sh
+		chmod 777 src/mkreleasehdr.sh
 		make MALLOC=libc -j4
 		
 	3）编译完成之后
@@ -24,7 +25,24 @@
 	注：sentinel.conf中的daemonize配置修改为：no，即：前台运行，否则supervisor无法管理
 	
 6、若配置了notification-script
-	则把redis-sentinel-notify.sh放置在 /usr/pikamgr/sh 目录下
-	并根据需要完善redis-sentinel-notify中的以下配置：
+	则把redis-sentinel-notify.sh放置在redis-sentinel所在服务器的目标路径下：
+		存放路径：pika-dashboard.toml中的sentinel_notification_script配置项对应的路径下
+		
+	注：目前脚本中只关注了这些状态："+sdown"、"+odown"、"+switch-master"、"-sdown"
+	参考地址：http://redisdoc.com/topic/sentinel.html
+	
+	1）根据需要完善redis-sentinel-notify中的以下配置：
 		MAIL_FROM=""
 		MAIL_TO=""
+
+		注：MAIL_TO如果需要配置多个mail地址，则多个mail地址之间以 "英文逗号" 隔开
+		
+	2）执行权限操作 /usr/pikamgr/sh/redis-sentinel-notify.sh
+		chmod 777 /usr/pikamgr/sh/redis-sentinel-notify.sh
+		
+	3）redis-sentinel集群会部署多个点，一般我们只需要其中一个redis-sentinel进行通知即可
+		则在需要开启notification-script功能的redis-sentinel的所在服务器设置下面的环境变量：
+		在 /etc/profile 末尾添加：export SENTINEL_NOTIFY_ENABLE=1
+		
+		并且安装mail服务：
+			yum install mailx -y

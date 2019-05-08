@@ -221,17 +221,10 @@ func (s *Sentinel) existsCommand(client *Client, names []string) (map[string]boo
 			client.Close()
 		}
 	}()
-	go func() {
-		for _, name := range names {
-			client.Send("SENTINEL", "get-master-addr-by-name", name)
-		}
-		if len(names) != 0 {
-			client.Flush()
-		}
-	}()
+
 	exists := make(map[string]bool, len(names))
 	for _, name := range names {
-		r, err := client.Receive()
+		r, err := client.Do("SENTINEL", "get-master-addr-by-name", name)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -246,29 +239,18 @@ func (s *Sentinel) slavesCommand(client *Client, names []string) (map[string][]m
 			client.Close()
 		}
 	}()
+
 	exists, err := s.existsCommand(client, names)
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		var pending int
-		for _, name := range names {
-			if !exists[name] {
-				continue
-			}
-			pending++
-			client.Send("SENTINEL", "slaves", name)
-		}
-		if pending != 0 {
-			client.Flush()
-		}
-	}()
+
 	results := make(map[string][]map[string]string, len(names))
 	for _, name := range names {
 		if !exists[name] {
 			continue
 		}
-		values, err := redigo.Values(client.Receive())
+		values, err := redigo.Values(client.Do("SENTINEL", "slaves", name))
 		if err != nil {
 			return nil, errors.Trace(err)
 		}

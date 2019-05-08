@@ -8,7 +8,7 @@ vrrp_instance VI_PIKA_1 {
     state {{if eq $LVSID "1"}}MASTER{{else}}BACKUP{{end}}
     interface enp10s0f0
     virtual_router_id 60
-    priority {{if eq $LVSID "1"}}120{{else if eq $LVSID "2"}}100{{end}}
+    priority {{if eq $LVSID "1"}}120{{else}}100{{end}}
     advert_int 1
     authentication {
         auth_type PASS
@@ -59,7 +59,7 @@ vrrp_instance VI_PIKA_2 {
     state {{if eq $LVSID "2"}}MASTER{{else}}BACKUP{{end}}
     interface enp10s0f0
     virtual_router_id 61
-    priority {{if eq $LVSID "2"}}120{{else if eq $LVSID "1"}}100{{end}}
+    priority {{if eq $LVSID "2"}}120{{else}}100{{end}}
     advert_int 1
     authentication {
         auth_type PASS
